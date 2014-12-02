@@ -97,27 +97,27 @@ void inputUpdate(FILE *cfPtr){
 } //end inputUpdate
  
 void deleteRecord(FILE *cfPtr){
+   int record;
    struct hardwareInventory inventory;
    struct hardwareInventory blankInventory = {0, "", 0, 0.0};
   
-  while (inventory.record != 0){
+  do{
     puts("Enter record number 1 to 100, 0 to return to main menu");
     printf("%s", "? ");
-    scanf("%d", &inventory.record);
+    scanf("%d", &record);
     
-    fseek(cfPtr, (inventory.record - 1) * sizeof(struct hardwareInventory), SEEK_SET);
+    fseek(cfPtr, (record - 1) * sizeof(struct hardwareInventory), SEEK_SET);
     fread(&inventory, sizeof(struct hardwareInventory), 1, cfPtr);
     
-    if (inventory.record == 0){
+    if (record == 0){
       break;
     } //end if
     else{
-      fseek(cfPtr, (inventory.record - 1) * sizeof(struct hardwareInventory), SEEK_SET);
+      fseek(cfPtr, (record - 1) * sizeof(struct hardwareInventory), SEEK_SET);
       fwrite(&blankInventory, sizeof(struct hardwareInventory), 1, cfPtr);
-      printf("Record %d deleted.\n\n", inventory.record);
+      printf("Record %d deleted.\n\n", record);
     } //end else
-    
-  } //end while
+  }while (record != 0); //end while
 } //end deleteRecord
  
 void listAll(FILE *cfPtr){
