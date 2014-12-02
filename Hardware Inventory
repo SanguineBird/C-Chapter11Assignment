@@ -4,22 +4,22 @@
 // Assignment 10, Chapter 11
 // Purpose: Hardware Inventory
 // Write a database to keep track of tools, their cost and number.
-
+ 
 #include <stdio.h>
 #include <stdlib.h>
-
+ 
 struct hardwareInventory {
   unsigned int record;
   char tool [15];
   unsigned int quantity;
   double cost;
 };
-
+ 
 int mainMenu(void);
 void inputUpdate(FILE *cfPtr);
 void deleteRecord(FILE *cfPtr);
 void listAll(FILE *cfPtr);
-
+ 
 int main(void){
   unsigned int input;
   FILE *cfPtr;
@@ -31,7 +31,7 @@ int main(void){
       fwrite(&blankInventory, sizeof(hardwareInventory), 1, cfPtr);
     } //end for
   } //end if
-
+ 
   
   while (input != 4) {
     input = mainMenu();
@@ -55,7 +55,7 @@ int main(void){
     } //end switch
   } //end while
 } //end main
-
+ 
 int mainMenu(void){
   int selection = 0;
   puts("Enter Request:");
@@ -67,32 +67,35 @@ int mainMenu(void){
   scanf("%d", &selection);
   return selection;
 } //end mainMenu
-
+ 
 void inputUpdate(FILE *cfPtr){
-  struct hardwareInventory inventory;
   
-  while (inventory.record != 0){
+  int record;
+ 
+  do {
     puts("Enter record number 1 to 100, 0 to return to main menu");
     printf("%s", "? ");
-    scanf("%d", &inventory.record);
+    scanf("%d", &record);
     
-    if ((inventory.record >= 1) && (inventory.record <= 100)){
+    if ((record >= 1) && (record <= 100)){
+      struct hardwareInventory inventory = { 0, "", 0, 0.0 };
       puts("Enter tool name, quantity, cost");
       printf("? ");
-      scanf("%s%d%1f", inventory.tool, &inventory.quantity, &inventory.cost);
+      scanf("%s%d%lf", inventory.tool, &inventory.quantity, &inventory.cost);
+      inventory.record = record;
       
-      fseek(cfPtr, (inventory.record - 1) * sizeof(struct hardwareInventory), SEEK_SET);
+      fseek(cfPtr, (record - 1) * sizeof(struct hardwareInventory), SEEK_SET);
       fwrite(&inventory, sizeof(struct hardwareInventory), 1, cfPtr);
     } //end if
-    else if (inventory.record == 0){
+    else if (record == 0){
       break;
     } //end else if
     else{
       puts("Error: invalid input.");
     } //end else
-  } //end while
+  } while (record != 0); //end while
 } //end inputUpdate
-
+ 
 void deleteRecord(FILE *cfPtr){
    struct hardwareInventory inventory;
    struct hardwareInventory blankInventory = {0, "", 0, 0.0};
@@ -116,7 +119,7 @@ void deleteRecord(FILE *cfPtr){
     
   } //end while
 } //end deleteRecord
-
+ 
 void listAll(FILE *cfPtr){
   int result;
   struct hardwareInventory inventory = {0, "", 0, 0.0};
