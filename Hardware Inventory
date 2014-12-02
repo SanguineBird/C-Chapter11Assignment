@@ -1,0 +1,134 @@
+// Meghan Moore, CIT-145-BIN1
+// November 15, 2014
+// Compiler: Orwell Dev-C++
+// Assignment 10, Chapter 11
+// Purpose: Hardware Inventory
+// Write a database to keep track of tools, their cost and number.
+
+#include <stdio.h>
+#include <stdlib.h>
+
+struct hardwareInventory {
+  unsigned int record;
+  char tool [15];
+  unsigned int quantity;
+  double cost;
+};
+
+int mainMenu(void);
+void inputUpdate(FILE *cfPtr);
+void deleteRecord(FILE *cfPtr);
+void listAll(FILE *cfPtr);
+
+int main(void){
+  unsigned int input;
+  FILE *cfPtr;
+  
+  if((cfPtr = fopen("hardware.dat", "rb+")) == NULL){
+    cfPtr = fopen("hardware.dat", "wb+");
+    for (int i = 1; i <= 100; ++i){
+      struct hardwareInventory blankInventory = {0, "", 0, 0.0};
+      fwrite(&blankInventory, sizeof(hardwareInventory), 1, cfPtr);
+    } //end for
+  } //end if
+
+  
+  while (input != 4) {
+    input = mainMenu();
+    switch (input){
+      case 1:
+        inputUpdate(cfPtr);
+        break;
+      case 2:
+        deleteRecord(cfPtr);
+        break;
+      case 3:
+        listAll(cfPtr);
+        break;
+      case 4:
+        fclose(cfPtr);
+        system("pause"); return 0;
+        break;
+      default:
+        puts("\n\aError: invalid input.\n");
+        break;
+    } //end switch
+  } //end while
+} //end main
+
+int mainMenu(void){
+  int selection = 0;
+  puts("Enter Request:");
+  puts("1 - Input new tool or update an existing tool");
+  puts("2 - Delete a tool");
+  puts("3 - List all tools");
+  puts("4 - Exit");
+  printf("%s", "? ");
+  scanf("%d", &selection);
+  return selection;
+} //end mainMenu
+
+void inputUpdate(FILE *cfPtr){
+  struct hardwareInventory inventory;
+  
+  while (inventory.record != 0){
+    puts("Enter record number 1 to 100, 0 to return to main menu");
+    printf("%s", "? ");
+    scanf("%d", &inventory.record);
+    
+    if ((inventory.record >= 1) && (inventory.record <= 100)){
+      puts("Enter tool name, quantity, cost");
+      printf("? ");
+      scanf("%s%d%1f", inventory.tool, &inventory.quantity, &inventory.cost);
+      
+      fseek(cfPtr, (inventory.record - 1) * sizeof(struct hardwareInventory), SEEK_SET);
+      fwrite(&inventory, sizeof(struct hardwareInventory), 1, cfPtr);
+    } //end if
+    else if (inventory.record == 0){
+      break;
+    } //end else if
+    else{
+      puts("Error: invalid input.");
+    } //end else
+  } //end while
+} //end inputUpdate
+
+void deleteRecord(FILE *cfPtr){
+   struct hardwareInventory inventory;
+   struct hardwareInventory blankInventory = {0, "", 0, 0.0};
+  
+  while (inventory.record != 0){
+    puts("Enter record number 1 to 100, 0 to return to main menu");
+    printf("%s", "? ");
+    scanf("%d", &inventory.record);
+    
+    fseek(cfPtr, (inventory.record - 1) * sizeof(struct hardwareInventory), SEEK_SET);
+    fread(&inventory, sizeof(struct hardwareInventory), 1, cfPtr);
+    
+    if (inventory.record == 0){
+      break;
+    } //end if
+    else{
+      fseek(cfPtr, (inventory.record - 1) * sizeof(struct hardwareInventory), SEEK_SET);
+      fwrite(&blankInventory, sizeof(struct hardwareInventory), 1, cfPtr);
+      printf("Record %d deleted.\n\n", inventory.record);
+    } //end else
+    
+  } //end while
+} //end deleteRecord
+
+void listAll(FILE *cfPtr){
+  int result;
+  struct hardwareInventory inventory = {0, "", 0, 0.0};
+	
+  printf("%-10s%-15s%-10s%-10s\n\n", "Record", "Tool Name", "Quantity", "Cost");
+  rewind ( cfPtr );
+  
+  while(!feof(cfPtr)){
+    fread(&inventory, sizeof(struct hardwareInventory), 1, cfPtr);
+    
+    if (inventory.record != 0){
+    	printf("%-10d%-15s%-10d%-10.2f\n", inventory.record, inventory.tool, inventory.quantity, inventory.cost);
+    } //end if
+  } // end while
+} //end listAll
